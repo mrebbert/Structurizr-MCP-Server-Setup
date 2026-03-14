@@ -1,0 +1,45 @@
+Generate a validated Structurizr DSL workspace for a Product Information Management (PIM) system.
+Requirements
+Personas:
+* Product Manager – maintains and manages product data
+* Supplier – provides product information and assets
+* Channel / E-Commerce – consumes prepared product data
+Software Systems:
+* PIM System (main system)
+* ERP System (external) – provides master data and prices
+* Shop System (external) – receives prepared product data
+Containers inside PIM System:
+* Web Application (React / TypeScript) [tag: Frontend]
+* API Gateway (NGINX / Kong) [tag: Gateway]
+* PIM Core Service (Java / Spring Boot) [tag: Service]
+* Asset Management Service (Node.js) [tag: Service]
+* Publishing Service (Python) [tag: Service]
+* Product Database (PostgreSQL) [tag: Database]
+* Asset Storage (S3 / MinIO) [tag: Storage]
+* Search Index (Elasticsearch) [tag: Search]
+* Message Queue (RabbitMQ) [tag: Queue]
+Components inside PIM Core Service:
+* Product Controller (Spring MVC)
+* Category Controller (Spring MVC)
+* Attribute Service (Spring Service)
+* Import Service (Spring Service)
+* Export Service (Spring Service)
+* Product Repository (Spring Data JPA)
+Components inside Asset Management Service:
+* Upload Controller (Express.js)
+* Asset Processor (Sharp / FFmpeg)
+* Asset Repository (Mongoose)
+Relationships: model all logical relationships between persons, containers, components and external systems.
+Deployment Environment "Production":
+* Kubernetes Cluster (Kubernetes 1.29)
+   * Frontend Namespace → web-app-pod (3 Replicas, Docker)
+   * Gateway Namespace → api-gateway-pod (2 Replicas, Docker)
+   * Backend Namespace → core-service-pod (3 Replicas), asset-service-pod (2 Replicas), publish-service-pod (2 Replicas)
+   * Data Namespace → postgres-pod (Primary + Replica), elasticsearch-pod (3-Node Cluster), rabbitmq-pod (3-Node Cluster)
+   * Storage Namespace → minio-pod (Distributed Mode)
+Views (all with autoLayout)
+1. systemContext – "PIM System Context"
+2. container – "PIM Container Overview"
+3. component for PIM Core Service – "PIM Core Service Components"
+4. component for Asset Management Service – "Asset Management Service Components"
+5. deployment for Production – "PIM Deployment Production"

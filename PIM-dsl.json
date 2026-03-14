@@ -1,0 +1,204 @@
+workspace "PIM System" "Product Information Management System" {
+
+    model {
+
+        productManager = person "Product Manager" "Maintains and manages product data" "Person"
+        supplier       = person "Supplier" "Provides product information and assets" "Person"
+        channel        = person "Channel / E-Commerce" "Consumes prepared product data" "Person"
+
+        erp      = softwareSystem "ERP System"  "Provides master data and prices"  "External"
+        shopSystem = softwareSystem "Shop System" "Receives prepared product data"   "External"
+
+        pim = softwareSystem "PIM System" "Central system for managing product information" {
+
+            webApp = container "Web Application" "User interface for product managers." "React / TypeScript" {
+                tags "Frontend"
+            }
+            apiGateway = container "API Gateway" "Central entry point for all API requests." "NGINX / Kong" {
+                tags "Gateway"
+            }
+            coreService = container "PIM Core Service" "Management of products, attributes and categories." "Java / Spring Boot" {
+                tags "Service"
+                productController  = component "Product Controller"  "REST API for product resources."                "Spring MVC"
+                categoryController = component "Category Controller" "REST API for categories and hierarchies."       "Spring MVC"
+                attributeService   = component "Attribute Service"   "Management of product attributes and schemas."  "Spring Service"
+                importService      = component "Import Service"      "Processing of incoming product data."           "Spring Service"
+                exportService      = component "Export Service"      "Preparation of product data for channels."      "Spring Service"
+                productRepository  = component "Product Repository"  "Database access for products."                  "Spring Data JPA"
+            }
+            assetService = container "Asset Management Service" "Management of media and digital assets." "Node.js" {
+                tags "Service"
+                uploadController = component "Upload Controller" "Reception and validation of asset uploads." "Express.js"
+                assetProcessor   = component "Asset Processor"  "Conversion and optimization of media."      "Sharp / FFmpeg"
+                assetRepository  = component "Asset Repository" "Management of asset metadata."              "Mongoose"
+            }
+            publishService = container "Publishing Service" "Preparation and distribution of product data to channels." "Python" {
+                tags "Service"
+            }
+            database     = container "Product Database" "Persistent storage of all product information." "PostgreSQL" {
+                tags "Database"
+            }
+            assetStorage = container "Asset Storage" "Storage of images, videos and documents." "S3 / MinIO" {
+                tags "Storage"
+            }
+            searchIndex  = container "Search Index" "Full-text search and filtering over product data." "Elasticsearch" {
+                tags "Search"
+            }
+            messageQueue = container "Message Queue" "Asynchronous communication between services." "RabbitMQ" {
+                tags "Queue"
+            }
+        }
+
+        # Person -> Container
+        productManager -> webApp        "Manages product data via"
+        supplier       -> apiGateway    "Imports data and assets via API"
+        channel        -> publishService "Subscribes to product data from"
+
+        # Container -> Container
+        webApp         -> apiGateway     "Sends requests to"
+        apiGateway     -> coreService    "Forwards requests to"
+        apiGateway     -> assetService   "Forwards asset requests to"
+        coreService    -> database       "Reads and writes"
+        coreService    -> searchIndex    "Indexes products in"
+        coreService    -> messageQueue   "Publishes events to"
+        assetService   -> assetStorage   "Stores assets in"
+        assetService   -> messageQueue   "Publishes asset events to"
+        publishService -> coreService    "Reads product data from"
+        publishService -> assetService   "Reads assets from"
+        publishService -> messageQueue   "Subscribes to events from"
+        publishService -> shopSystem     "Delivers product data to"
+        erp            -> coreService    "Synchronizes master data with"
+
+        # Components – PIM Core Service
+        apiGateway        -> productController  "Forwards product requests to"
+        apiGateway        -> categoryController "Forwards category requests to"
+        productController  -> attributeService  "Uses"
+        productController  -> productRepository "Reads/writes via"
+        categoryController -> productRepository "Reads/writes via"
+        importService      -> productRepository "Writes imported data via"
+        exportService      -> productRepository "Reads data via"
+        productRepository  -> database          "Persists in"
+
+        # Components – Asset Management Service
+        apiGateway       -> uploadController "Forwards upload requests to"
+        uploadController -> assetProcessor   "Passes files to"
+        assetProcessor   -> assetRepository  "Stores metadata via"
+        assetProcessor   -> assetStorage     "Stores files in"
+
+        deploymentEnvironment "Production" {
+            deploymentNode "Kubernetes Cluster" "Production cluster" "Kubernetes 1.29" {
+                deploymentNode "Frontend Namespace" {
+                    deploymentNode "web-app-pod" "3 Replicas" "Docker" {
+                        containerInstance webApp
+                    }
+                }
+                deploymentNode "Gateway Namespace" {
+                    deploymentNode "api-gateway-pod" "2 Replicas" "Docker" {
+                        containerInstance apiGateway
+                    }
+                }
+                deploymentNode "Backend Namespace" {
+                    deploymentNode "core-service-pod" "3 Replicas" "Docker" {
+                        containerInstance coreService
+                    }
+                    deploymentNode "asset-service-pod" "2 Replicas" "Docker" {
+                        containerInstance assetService
+                    }
+                    deploymentNode "publish-service-pod" "2 Replicas" "Docker" {
+                        containerInstance publishService
+                    }
+                }
+                deploymentNode "Data Namespace" {
+                    deploymentNode "postgres-pod" "Primary + Replica" "Docker" {
+                        containerInstance database
+                    }
+                    deploymentNode "elasticsearch-pod" "3-Node Cluster" "Docker" {
+                        containerInstance searchIndex
+                    }
+                    deploymentNode "rabbitmq-pod" "3-Node Cluster" "Docker" {
+                        containerInstance messageQueue
+                    }
+                }
+                deploymentNode "Storage Namespace" {
+                    deploymentNode "minio-pod" "Distributed Mode" "Docker" {
+                        containerInstance assetStorage
+                    }
+                }
+            }
+        }
+    }
+
+    views {
+        systemContext pim "SystemContext" {
+            include *
+            autoLayout
+            title "PIM System Context"
+        }
+        container pim "Container" {
+            include *
+            autoLayout
+            title "PIM Container Overview"
+        }
+        component coreService "CoreServiceComponents" {
+            include *
+            autoLayout
+            title "PIM Core Service Components"
+        }
+        component assetService "AssetServiceComponents" {
+            include *
+            autoLayout
+            title "Asset Management Service Components"
+        }
+        deployment pim "Production" "DeploymentProduction" {
+            include *
+            autoLayout
+            title "PIM Deployment Production"
+        }
+        styles {
+            element "Frontend" {
+                background #1168BD
+                color #ffffff
+                shape WebBrowser
+            }
+            element "Gateway" {
+                background #438DD5
+                color #ffffff
+                shape Hexagon
+            }
+            element "Service" {
+                background #85BBF0
+                color #000000
+            }
+            element "Database" {
+                background #336791
+                color #ffffff
+                shape Cylinder
+            }
+            element "Storage" {
+                background #F4A523
+                color #ffffff
+                shape Cylinder
+            }
+            element "Search" {
+                background #00BFB3
+                color #ffffff
+                shape Cylinder
+            }
+            element "Queue" {
+                background #FF6B35
+                color #ffffff
+                shape Pipe
+            }
+            element "External" {
+                background #999999
+                color #ffffff
+            }
+            element "Person" {
+                background #08427B
+                color #ffffff
+                shape Person
+            }
+        }
+        theme default
+    }
+}
