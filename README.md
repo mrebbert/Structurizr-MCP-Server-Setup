@@ -11,9 +11,9 @@ This setup connects Claude Desktop to a self-hosted Structurizr instance via the
 **Typical flow:**
 
 ```
-Describe your system in plain language
+Describe your system in plain language  ─or─  sketch it by hand
         ↓
-Claude generates a validated Structurizr DSL workspace
+Claude reads the text or image and generates a validated Structurizr DSL workspace
         ↓
 Paste the DSL into Structurizr
         ↓
@@ -53,6 +53,36 @@ The diagrams below were rendered by Structurizr from the generated DSL:
 | Core Service Components | ![Core Service Components](images/CoreServiceComponents-dark.png) |
 | Asset Service Components | ![Asset Service Components](images/AssetServiceComponents-dark.png) |
 | Deployment (Production) | ![Deployment Production](images/DeploymentProduction-dark.png) |
+
+---
+
+## Iteration 2: Extending via Handwritten Sketch
+
+In a second iteration, the architecture was extended using a **handwritten sketch** — drawn on a reMarkable tablet and uploaded directly to Claude.
+
+### The Sketch
+
+![Handwritten note](images/note.png)
+
+The sketch shows a new component — an **AI Text Generator** — connected to the PIM system. Claude reads the sketch as an image, identifies the new element and its relationships, and integrates them into the existing DSL workspace:
+
+- PIM → AI Text Generator: *generates product text*
+- The AI Text Generator becomes a new container inside the PIM system
+
+No prompt engineering required — the image itself is the specification.
+
+### Updated Diagrams
+
+After Claude merged the sketch into the DSL, Structurizr rendered the updated architecture:
+
+| View | Diagram |
+|---|---|
+| System Context | ![System Context](images/note_add_SystemContext-dark.png) |
+| Container Overview | ![Container](images/note_add_ContainerView-dark.png) |
+| Core Service Components | ![Core Service Components](images/note_add_CoreServiceComponents-dark.png) |
+| Asset Service Components | ![Asset Service Components](images/note_add_AssetServiceComponents-dark.png) |
+| AI Text Service Components | ![AI Text Service Components](images/note_add_AITextServiceComponents-dark.png) |
+| Deployment (Production) | ![Deployment Production](images/note_add_DeploymentProduction-dark.png) |
 
 ---
 
