@@ -38,6 +38,11 @@
 ```bash
 git clone https://github.com/structurizr/structurizr.git
 cd structurizr
+# build the structurizr Server
+./mvnw -DexcludedGroups=IntegrationTest package
+docker build . -f structurizr-application/Dockerfiles/eclipse-temurin-noble -t structurizr
+
+# build the structurizr MCP-Server
 ./mvnw -Dmaven.test.skip=true package -am -pl structurizr-mcp
 docker build . -f structurizr-mcp/Dockerfiles/eclipse-temurin-noble -t structurizr-mcp
 ```
