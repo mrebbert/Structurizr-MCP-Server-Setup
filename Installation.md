@@ -38,8 +38,8 @@
 ```bash
 git clone https://github.com/structurizr/structurizr.git
 cd structurizr
-./mvnw -DexcludedGroups=IntegrationTest package
-docker build . -t structurizr
+./mvnw -Dmaven.test.skip=true package -am -pl structurizr-mcp
+docker build . -f structurizr-mcp/Dockerfiles/eclipse-temurin-noble -t structurizr-mcp
 ```
 
 ---
@@ -78,7 +78,7 @@ services:
       - structurizr-net
 
   structurizr-mcp:
-    image: structurizr
+    image: structurizr-mcp
     container_name: structurizr-mcp
     restart: unless-stopped
     ports:
